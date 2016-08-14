@@ -70,8 +70,22 @@ fun printRow row =
 
 fun printBoard scores =
   case scores of
-      [] => ()
-    | row::scores => (printRow row;
-                      printBoard scores)
+      [] => print "\n        a,w,d,s or q        \n"
+    | row::scores' => ((if length scores = 4
+                        then print "2048.sml               0 pts\n\n"
+                        else ());
+                       printRow row;
+                       printBoard scores')
 
-val _ = printBoard scores;
+fun loop () =
+  let val key = (print "\^[[H";
+                 printBoard scores;
+                 TextIO.input1 TextIO.stdIn)
+  in
+      case key of
+          SOME #"q" => ()
+        | _ => loop ()
+  end
+
+val _ = OS.Process.system "clear"
+val _ = loop ()

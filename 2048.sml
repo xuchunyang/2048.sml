@@ -21,4 +21,57 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-val () = print "hello \^[[31m2048\^[[0;30m\n"
+val scores = [[0, 0, 0, 0],
+              [0, 0, 0, 0],
+              [8, 0, 0, 2],
+              [64, 16, 4, 0]]
+
+fun makeString length init =
+  if length = 0
+  then ""
+  else (Char.toString init) ^ makeString (length - 1) init
+
+fun getColor value =
+  case value of
+      0   => "\^[[100m"
+    | 2   => "\^[[41m"
+    | 4   => "\^[[42m"
+    | 8   => "\^[[43m"
+    | 16  => "\^[[44m"
+    | 32  => "\^[[45m"
+    | 64  => "\^[[46m"
+    | 128 => "\^[[47m"
+    | 256 => "\^[[101m"
+    | 512 => "\^[[102m"
+    | _   => ""
+
+fun colorizeString value s =
+  (getColor value) ^ s ^ "\^[[0m"
+
+fun centerString length s =
+  let
+      val extra = length - String.size (s)
+      val half_extra = (Real.fromInt extra) / 2.0;
+  in
+      (makeString (Real.ceil half_extra) #" ") ^ s ^
+      (makeString (Real.floor half_extra) #" ")
+  end
+
+fun format n =
+  centerString 7 (if n = 0 then "*" else Int.toString n)
+
+fun printRow row =
+  (List.app (fn n => print (colorizeString n "       ")) row;
+   print "\n";
+   List.app (fn n => print (colorizeString n (format n))) row;
+   print "\n";
+   List.app (fn n => print (colorizeString n "       ")) row;
+   print "\n")
+
+fun printBoard scores =
+  case scores of
+      [] => ()
+    | row::scores => (printRow row;
+                      printBoard scores)
+
+val _ = printBoard scores;

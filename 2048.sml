@@ -77,15 +77,31 @@ fun printBoard scores =
                        printRow row;
                        printBoard scores')
 
-fun loop () =
+fun loop scores =
   let val key = (print "\^[[H";
                  printBoard scores;
                  TextIO.input1 TextIO.stdIn)
   in
       case key of
           SOME #"q" => ()
-        | _ => loop ()
+        | SOME #"a" => loop [[0, 0, 0, 0],
+                             [0, 0, 0, 2],
+                             [8, 0, 2, 2],
+                             [64, 16, 4, 0]]
+        | SOME #"w" => loop [[0, 0, 0, 0],
+                             [8, 0, 0, 2],
+                             [64, 16, 4, 0],
+                             [0, 0, 2, 0]]
+        | SOME #"d" => loop [[0, 0, 0, 0],
+                             [2, 0, 0, 0],
+                             [8, 0, 0, 2],
+                             [64, 16, 4, 0]]
+        | SOME #"s" => loop [[2, 0, 0, 0],
+                             [0, 0, 0, 0],
+                             [8, 0, 0, 4],
+                             [64, 16, 4, 0]]
+        | _ => loop scores
   end
 
 val _ = OS.Process.system "clear"
-val _ = loop ()
+val _ = loop scores

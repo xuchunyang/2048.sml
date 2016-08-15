@@ -200,8 +200,24 @@ fun moveDown board =
       (successp, (rotateBoard o rotateBoard o rotateBoard) board_new)
   end
 
+fun findPairLeft board =
+  let
+      fun findPairLeftRow (a : int) b c d = a = b orelse b = c orelse c = d
+  in
+      case board of
+          [] => false
+        | a::b::c::d::board' => findPairLeftRow a b c d orelse findPairLeft board'
+        | _ => raise Unmatch
+  end
+
+fun gameEnded board =
+  not ((countZero board) > 0 orelse findPairLeft board orelse findPairLeft (rotateBoard board))
+
+exception GameEnd
+
 fun move f board =
   let
+      val _ = if gameEnded board then raise GameEnd else ()
       val (succeep, board_new) = f board
   in
       if succeep
@@ -211,6 +227,9 @@ fun move f board =
 and loop board =
   let val key = (print "\^[[H"; (* Move cursor home *)
                  printBoard board;
+                 if gameEnded board
+                 then raise GameEnd
+                 else ();
                  TextIO.input1 TextIO.stdIn)
   in
       case key of
@@ -223,4 +242,4 @@ and loop board =
   end
 
 val _ = OS.Process.system "clear"
-val _ = loop board
+val _ = loop board handle GameEnd => print "Game Over"

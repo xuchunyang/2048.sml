@@ -1,0 +1,9 @@
+* 2048.sml
+
+[[file:2048.png]]
+
+Console version of the game "2048" in Standard ML.
+
+** Requirement
+
+- [[http://www.smlnj.org/][Standard ML of New Jersey]]

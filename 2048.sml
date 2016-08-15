@@ -21,10 +21,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-val scores = [[0, 0, 0, 0],
-              [0, 0, 0, 0],
-              [8, 0, 0, 2],
-              [64, 16, 4, 0]]
+val board = [0, 2, 0, 0,
+             0, 0, 2, 0,
+             0, 0, 0, 0,
+             0, 0, 0, 0]
 
 fun makeString length init =
   if length = 0
@@ -33,17 +33,19 @@ fun makeString length init =
 
 fun getColor value =
   case value of
-      0   => "\^[[100m"
-    | 2   => "\^[[41m"
-    | 4   => "\^[[42m"
-    | 8   => "\^[[43m"
-    | 16  => "\^[[44m"
-    | 32  => "\^[[45m"
-    | 64  => "\^[[46m"
-    | 128 => "\^[[47m"
-    | 256 => "\^[[101m"
-    | 512 => "\^[[102m"
-    | _   => ""
+      0    => "\^[[100m"
+    | 2    => "\^[[41m"
+    | 4    => "\^[[42m"
+    | 8    => "\^[[43m"
+    | 16   => "\^[[44m"
+    | 32   => "\^[[45m"
+    | 64   => "\^[[46m"
+    | 128  => "\^[[47m"
+    | 256  => "\^[[101m"
+    | 512  => "\^[[102m"
+    | 1024 => "\^[[103m"
+    | 2048 => "\^[[104m"
+    | _    => ""
 
 fun colorizeString value s =
   (getColor value) ^ s ^ "\^[[0m"
@@ -68,40 +70,63 @@ fun printRow row =
    List.app (fn n => print (colorizeString n "       ")) row;
    print "\n")
 
-fun printBoard scores =
-  case scores of
-      [] => print "\n        a,w,d,s or q        \n"
-    | row::scores' => ((if length scores = 4
-                        then print "2048.sml               0 pts\n\n"
-                        else ());
-                       printRow row;
-                       printBoard scores')
+fun calcScore board =
+  let
+      val sum = foldl (fn (elt, acc) => elt + acc) 0
+      fun times x = if x < 4
+                    then 0
+                    else if x = 4
+                    then 1
+                    else 1 + times (x div 2)
+  in
+      sum (map (fn x => x * (times x)) board)
+  end
 
-fun loop scores =
+fun printBoardHeader board =
+  let
+      val score = Int.toString (calcScore board)
+      val whitespaces = makeString (16 - String.size (score)) #" "
+  in
+      if length board = 16
+      then print ("2048.sml" ^ whitespaces ^ score ^ " pts\n\n")
+      else ()
+  end
+
+exception Unmatch
+
+fun printBoard board =
+  case board of
+      [] => print "\n        a,w,d,s or q        \n"
+    | a::b::c::d::board' => (printBoardHeader board;
+                             printRow [a, b, c, d];
+                             printBoard board')
+    | _ => raise Unmatch
+
+fun loop board =
   let val key = (print "\^[[H";
-                 printBoard scores;
+                 printBoard board;
                  TextIO.input1 TextIO.stdIn)
   in
       case key of
           SOME #"q" => ()
-        | SOME #"a" => loop [[0, 0, 0, 0],
-                             [0, 0, 0, 2],
-                             [8, 0, 2, 2],
-                             [64, 16, 4, 0]]
-        | SOME #"w" => loop [[0, 0, 0, 0],
-                             [8, 0, 0, 2],
-                             [64, 16, 4, 0],
-                             [0, 0, 2, 0]]
-        | SOME #"d" => loop [[0, 0, 0, 0],
-                             [2, 0, 0, 0],
-                             [8, 0, 0, 2],
-                             [64, 16, 4, 0]]
-        | SOME #"s" => loop [[2, 0, 0, 0],
-                             [0, 0, 0, 0],
-                             [8, 0, 0, 4],
-                             [64, 16, 4, 0]]
-        | _ => loop scores
+        | SOME #"a" => loop [0, 0, 0, 0,
+                             0, 0, 0, 2,
+                             8, 0, 2, 2,
+                             64, 16, 4, 0]
+        | SOME #"w" => loop [0, 0, 0, 0,
+                             8, 0, 0, 2,
+                             64, 16, 4, 0,
+                             0, 0, 2, 0]
+        | SOME #"d" => loop [0, 0, 0, 0,
+                             2, 0, 0, 0,
+                             8, 0, 0, 2,
+                             64, 16, 4, 0]
+        | SOME #"s" => loop [2, 0, 0, 0,
+                             0, 0, 0, 0,
+                             8, 0, 0, 4,
+                             64, 16, 4, 0]
+        | _ => loop board
   end
 
 val _ = OS.Process.system "clear"
-val _ = loop scores
+val _ = loop board

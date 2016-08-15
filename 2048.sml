@@ -104,7 +104,7 @@ fun printBoard board =
 
 fun zerop x = x = 0
 fun countZero xs = List.length (List.filter zerop xs)
-val seed = Random.rand (1,1)
+val seed = Random.rand (1,1)    (* NOTE: Require SML/NJ *)
 fun rand i j = Random.randRange (i, j) seed
 
 fun addRandom board =

@@ -242,4 +242,5 @@ and loop board =
   end
 
 val _ = OS.Process.system "clear"
-val _ = loop board handle GameEnd => print "Game Over"
+val _ = loop board handle GameEnd => (print "Game Over\n";
+                                      OS.Process.exit OS.Process.success)

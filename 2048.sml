@@ -103,6 +103,26 @@ fun printBoard board =
     | _ => raise Unmatch
 
 fun zerop x = x = 0
+fun countZero xs = List.length (List.filter zerop xs)
+val seed = Random.rand (1,1)
+fun rand i j = Random.randRange (i, j) seed
+
+fun addRandom board =
+  let val number_of_zeros = countZero board
+      val random_pos = rand 1 number_of_zeros
+      val random_value = if (rand 1 6) = 6 then 4 else 2
+      fun loop board pos =
+        case board of
+            [] => []
+          | elt::board' => if elt = 0 andalso pos = 1
+                           then random_value :: loop board' 0
+                           else if elt <> 0
+                           then elt::(loop board' pos)
+                           else elt::(loop board' (pos - 1))
+  in
+      loop board random_pos
+  end
+
 fun notZerop x = x <> 0
 fun makeList length init =
   if length = 0
@@ -180,17 +200,25 @@ fun moveDown board =
       (successp, (rotateBoard o rotateBoard o rotateBoard) board_new)
   end
 
-fun loop board =
+fun move f board =
+  let
+      val (succeep, board_new) = f board
+  in
+      if succeep
+      then loop (addRandom board_new)
+      else loop board
+  end
+and loop board =
   let val key = (print "\^[[H"; (* Move cursor home *)
                  printBoard board;
                  TextIO.input1 TextIO.stdIn)
   in
       case key of
           SOME #"q" => ()
-        | SOME #"a" => loop (#2 (moveLeft board))
-        | SOME #"w" => loop (#2 (moveUp board))
-        | SOME #"d" => loop (#2 (moveRight board))
-        | SOME #"s" => loop (#2 (moveDown board))
+        | SOME #"a" => move moveLeft board
+        | SOME #"w" => move moveUp board
+        | SOME #"d" => move moveRight board
+        | SOME #"s" => move moveDown board
         | _ => loop board
   end
 

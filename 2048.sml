@@ -21,11 +21,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *)
 
-val board = [0, 2, 0, 0,
-             0, 0, 2, 0,
-             0, 0, 0, 0,
-             0, 0, 0, 0]
-
 fun makeString length init =
   if length = 0
   then ""
@@ -240,6 +235,9 @@ and loop board =
         | SOME #"s" => move moveDown board
         | _ => loop board
   end
+
+
+val board = addRandom (addRandom (makeList 16 0))
 
 val _ = OS.Process.system "clear"
 val _ = loop board handle GameEnd => (print "Game Over\n";

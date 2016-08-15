@@ -102,8 +102,52 @@ fun printBoard board =
                              printBoard board')
     | _ => raise Unmatch
 
+fun zerop x = x = 0
+fun notZerop x = x <> 0
+fun makeList length init =
+  if length = 0
+  then []
+  else init :: makeList (length - 1) init
+
+fun moveLeft board =
+  let
+      fun rotate row =
+        let
+            val row_no_zero = List.filter notZerop row
+            val padding = makeList (4 - (List.length row_no_zero)) 0
+            val new_row = row_no_zero @ padding
+        in
+            new_row
+        end
+      fun merge row =
+        case row of
+            [] => []
+          | a::[] => [a]
+          | a::b::row' => if a <> 0 andalso a = b
+                          then (a + b) :: merge (row' @ [0])
+                          else a :: merge (b::row')
+      fun moveLeftRow row =
+        let
+            val new_row = merge (rotate row)
+            val successp = new_row <> row
+        in
+            (successp, new_row)
+        end
+  in
+      case board of
+          [] => (false, [])
+        | a::b::c::d::board' =>
+          let val (successp1, row1) = moveLeft board'
+              val (successp2, row2) = moveLeftRow [a, b, c, d]
+          in
+              (successp1 orelse successp2, row2 @ row1)
+          end
+        | _ => raise Unmatch
+  end
+
+
 fun loop board =
-  let val key = (print "\^[[H";
+  let val key = (print "\^[[H"; (* Move cursor home *)
                  printBoard board;
                  TextIO.input1 TextIO.stdIn)
   in

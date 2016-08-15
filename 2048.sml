@@ -145,6 +145,40 @@ fun moveLeft board =
         | _ => raise Unmatch
   end
 
+fun rotateBoard board =
+  let val [a, b, c, d,
+           e, f, g, h,
+           i, j, k, l,
+           m, n, O, p] = board
+  in
+      [m, i, e, a,
+       n, j, f, b,
+       O, k, g, c,
+       p, l, h, d]
+  end
+
+fun moveUp board =
+  let
+      val board_tmp = (rotateBoard o rotateBoard o rotateBoard) board
+      val (successp, board_new) = moveLeft board_tmp
+  in
+      (successp, rotateBoard board_new)
+  end
+
+fun moveRight board =
+  let
+      val board_tmp = (rotateBoard o rotateBoard) board
+      val (successp, board_new) = moveLeft board_tmp
+  in
+      (successp, (rotateBoard o rotateBoard) board_new)
+  end
+
+fun moveDown board =
+  let val board_tmp = rotateBoard board
+      val (successp, board_new) = moveLeft board_tmp
+  in
+      (successp, (rotateBoard o rotateBoard o rotateBoard) board_new)
+  end
 
 fun loop board =
   let val key = (print "\^[[H"; (* Move cursor home *)
@@ -153,22 +187,10 @@ fun loop board =
   in
       case key of
           SOME #"q" => ()
-        | SOME #"a" => loop [0, 0, 0, 0,
-                             0, 0, 0, 2,
-                             8, 0, 2, 2,
-                             64, 16, 4, 0]
-        | SOME #"w" => loop [0, 0, 0, 0,
-                             8, 0, 0, 2,
-                             64, 16, 4, 0,
-                             0, 0, 2, 0]
-        | SOME #"d" => loop [0, 0, 0, 0,
-                             2, 0, 0, 0,
-                             8, 0, 0, 2,
-                             64, 16, 4, 0]
-        | SOME #"s" => loop [2, 0, 0, 0,
-                             0, 0, 0, 0,
-                             8, 0, 0, 4,
-                             64, 16, 4, 0]
+        | SOME #"a" => loop (#2 (moveLeft board))
+        | SOME #"w" => loop (#2 (moveUp board))
+        | SOME #"d" => loop (#2 (moveRight board))
+        | SOME #"s" => loop (#2 (moveDown board))
         | _ => loop board
   end
 

@@ -90,12 +90,23 @@ fun printBoardHeader board =
 exception Unmatch
 
 fun printBoard board =
-  case board of
-      [] => print "\n        a,w,d,s or q        \n"
-    | a::b::c::d::board' => (printBoardHeader board;
-                             printRow [a, b, c, d];
-                             printBoard board')
-    | _ => raise Unmatch
+  let
+      (* Decimal UTF-8 bytes (MLton doesn't support Unicode in source code) *)
+      val left  = "\226\134\144" (* ← *)
+      val up    = "\226\134\145" (* ↑ *)
+      val right = "\226\134\146" (* → *)
+      val down  = "\226\134\147" (* ↓ *)
+      val board_help_message = "\n        " ^
+                               (String.concatWith "," [left, up, right, down]) ^
+                               " or q        \n"
+  in
+      case board of
+          [] => print board_help_message
+        | a::b::c::d::board' => (printBoardHeader board;
+                                 printRow [a, b, c, d];
+                                 printBoard board')
+        | _ => raise Unmatch
+  end
 
 fun zerop x = x = 0
 fun countZero xs = List.length (List.filter zerop xs)
@@ -234,14 +245,28 @@ and loop board =
                  if gameEnded board
                  then raise GameEnd
                  else ();
-                 TextIO.input1 TextIO.stdIn)
+                 TextIO.input TextIO.stdIn)
   in
       case key of
-          SOME #"q" => ()
-        | SOME #"a" => move moveLeft board
-        | SOME #"w" => move moveUp board
-        | SOME #"d" => move moveRight board
-        | SOME #"s" => move moveDown board
+          "q" => ()
+        (*  w
+          a s d *)
+        | "a" => move moveLeft board
+        | "w" => move moveUp board
+        | "d" => move moveRight board
+        | "s" => move moveDown board
+        (*  k
+          h j l *)
+        | "h" => move moveLeft board
+        | "k" => move moveUp board
+        | "l" => move moveRight board
+        | "j" => move moveDown board
+        (*  ↑
+          ← ↓ → *)
+        | "\^[[D" => move moveLeft board
+        | "\^[[A" => move moveUp board
+        | "\^[[C" => move moveRight board
+        | "\^[[B" => move moveDown board
         | _ => loop board
   end
 
@@ -256,7 +281,7 @@ val new_attr = Posix.TTY.termios {
         iflag = Posix.TTY.getiflag attr,
         oflag = Posix.TTY.getoflag attr,
         cflag = Posix.TTY.getcflag attr,
-        (* Disable canonical mode *)
+        (* disable canonical mode (buffered i/o) and local echo *)
         lflag = Posix.TTY.L.clear ((Posix.TTY.L.flags [Posix.TTY.L.icanon, Posix.TTY.L.echo]), Posix.TTY.getlflag attr),
         cc = Posix.TTY.getcc attr,
         ispeed = Posix.TTY.CF.getispeed attr,

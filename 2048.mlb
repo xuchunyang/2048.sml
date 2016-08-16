@@ -1,0 +1,11 @@
+(* 2048.mlb --- MLton's ML Basis system file  -*- mode: sml; -*-
+ *
+ * Usage: $ mlton 2048.mlb
+ *
+ * ML Basis system: http://mlton.org/MLBasis
+ *)
+
+$(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
+
+2048.sml

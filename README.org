@@ -6,4 +6,21 @@ Console version of the game "2048" in Standard ML.
 
 ** Requirement
 
-- [[http://www.smlnj.org/][Standard ML of New Jersey]]
+- smlnj-lib (for its [[http://www.smlnj.org/doc/smlnj-lib/Manual/random.html][Random structure]])
+
+** Running
+
+smlnj-lib is distributed with [[http://www.smlnj.org/][SML/NJ]] and [[http://mlton.org/Home][MLton]].
+
+*** [[http://www.smlnj.org/][SML/NJ]]
+
+#+BEGIN_SRC shell
+$ sml 2048.sml
+#+END_SRC
+
+*** [[http://mlton.org/][MLton]]
+
+#+BEGIN_SRC shell
+$ mlton 2048.mlb
+$ ./2048
+#+END_SRC

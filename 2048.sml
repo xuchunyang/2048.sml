@@ -249,5 +249,21 @@ and loop board =
 val board = addRandom (addRandom (makeList 16 0))
 
 val _ = OS.Process.system "clear"
-val _ = loop board handle GameEnd => (print "Game Over\n";
-                                      OS.Process.exit OS.Process.success)
+
+val fd = Posix.FileSys.stdin
+val attr = Posix.TTY.TC.getattr fd
+val new_attr = Posix.TTY.termios {
+        iflag = Posix.TTY.getiflag attr,
+        oflag = Posix.TTY.getoflag attr,
+        cflag = Posix.TTY.getcflag attr,
+        (* Disable canonical mode *)
+        lflag = Posix.TTY.L.clear ((Posix.TTY.L.flags [Posix.TTY.L.icanon, Posix.TTY.L.echo]), Posix.TTY.getlflag attr),
+        cc = Posix.TTY.getcc attr,
+        ispeed = Posix.TTY.CF.getispeed attr,
+        ospeed = Posix.TTY.CF.getospeed attr
+    }
+val _ = Posix.TTY.TC.setattr (fd, Posix.TTY.TC.sanow, new_attr)
+
+val _ = loop board handle GameEnd => print "Game Over\n"
+
+val _ = Posix.TTY.TC.setattr (fd, Posix.TTY.TC.sanow, attr)

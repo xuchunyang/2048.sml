@@ -99,7 +99,16 @@ fun printBoard board =
 
 fun zerop x = x = 0
 fun countZero xs = List.length (List.filter zerop xs)
-val seed = Random.rand (1,1)    (* NOTE: Require SML/NJ *)
+
+(* NOTE: The Random structure comes from smlnj-lib *)
+val seed =
+    let
+        val date = Date.fromTimeLocal (Time.now ())
+        val minute = Date.minute date
+        val second = Date.second date
+    in
+        Random.rand (minute, second)
+    end
 fun rand i j = Random.randRange (i, j) seed
 
 fun addRandom board =
